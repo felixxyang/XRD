@@ -9,6 +9,8 @@ from scipy import optimize
 import scipy.integrate as integrate
 import math
 import click
+import sys
+import json
 
 def _1Voigt(x, ampG1, cenG1, sigmaG1, cenL1, widL1):
     return (ampG1*(1/(sigmaG1*(np.sqrt(2*np.pi))))*(np.exp(-((x-cenG1)**2)/(2*(sigmaG1)**2)))) +\
@@ -55,8 +57,24 @@ def integration(df, pars):
         "Intensity vs 2Theta txt file from Rigaku"
     )
 )
+@click.option(
+    "--output-file",
+    "-output",
+    prompt=True,
+    help=(
+        "Output file for data of this measurement"
+    )
+)
 
-def handle_input(input_file):
+def handle_input(input_file, output_file):
+    
+    if sys.platform == "win32":
+        sampleName = input_file.split("\\")[-1].split("_")[1]
+        planeName = input_file.split("\\")[-1].split("_")[2].split(".")[0]
+    else:
+        sampleName = input_file.split("/")[-1].split("_")[1]
+        planeName = input_file.split("/")[-1].split("_")[2].split(".")[0]
+    
     df = pd.read_csv(input_file, delim_whitespace=True, header=0, names=['angle','intensity'], skiprows = 777)
     fig1, ax1 = plt.subplots()
     ax1.plot(df['angle'],df['intensity'],label="measurement")
@@ -72,7 +90,7 @@ def handle_input(input_file):
     pars, cov = optimize.curve_fit(f=_1Voigt, xdata=df['angle'], ydata=df['intensity'],p0=guess_prms)
     ax1.plot(df['angle'], _1Voigt(df['angle'], *pars), label="fitted curve")
     ax1.legend()
-    plt.show()
+    #plt.show()
     
     #residula
     fig2, ax2 = plt.subplots()
@@ -80,7 +98,7 @@ def handle_input(input_file):
     ax2.set_title('residual')
     ax2.set_xlabel('2$\Theta$')
     ax2.set_ylabel('difference in intensity')
-    plt.show()
+    #plt.show()
     
     area = integration(df, pars)
     print("The arae under the peak is", area)
@@ -90,6 +108,24 @@ def handle_input(input_file):
     print("The coefficient of determination, R^2, is", R2)
     AdjustedR2 = AdjRsquared( df['intensity'], _1Voigt(df['angle'], *pars), pars)
     print("The adjusted R^2 is", AdjustedR2)
+    theta = pars[3] / 2
+    print("Peak postition is located at", 2 * theta)
+    #Rigaku uses Cu as X-ray source
+    d = 1.5406 / (2 * np.sin(theta))
+    print("d-space is", d)
+    
+    #create dictionary
+    data_dict = {}
+    data_dict[sampleName+"_"+planeName] = {
+        "d" : d,
+        "area" : area,
+        "fwhm" : fwhm,
+        "R2" : R2,
+        "AdjustedR2": AdjustedR2
+        }
+    
+    with open(output_file, "w") as ofs:
+        json.dump(data_dict, ofs, indent=2)
     
     
 if __name__ == "__main__":

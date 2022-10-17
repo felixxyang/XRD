@@ -111,7 +111,7 @@ def handle_input(input_file, output_file):
     theta = pars[3] / 2
     print("Peak postition is located at", 2 * theta)
     #Rigaku uses Cu as X-ray source
-    d = 1.5406 / (2 * np.sin(theta))
+    d = 1.540593 / (2 * np.sin(theta))
     print("d-space is", d)
     
     #create dictionary

@@ -48,6 +48,13 @@ def integration(df, pars):
     result = integrate.quad(lambda x:_1Voigt(x, *pars), df['angle'].iat[0], df['angle'].iat[-1])
     return result[0]
 
+def findTemp(sample):
+    df_temp = pd.read_excel("C:\\Users\\felix\\OneDrive\\Desktop\\Temperatures.xlsx")
+    for i in range(df_temp.shape[0]):
+        if df_temp['sample'][i] == sample:
+            temp = df_temp['temp'][i]
+    return temp
+
 @click.command()
 @click.option(
     "--input-file",
@@ -114,9 +121,13 @@ def handle_input(input_file, output_file):
     d = 1.540593 / (2 * np.sin(theta))
     print("d-space is", d)
     
+    #finding sample's growth temperature
+    temp = int(findTemp(sampleName))
+    
     #create dictionary
     data_dict = {}
     data_dict[sampleName+"_"+planeName] = {
+        "temp" : temp,
         "d" : d,
         "area" : area,
         "fwhm" : fwhm,

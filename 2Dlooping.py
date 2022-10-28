@@ -47,7 +47,7 @@ def run_looping(input_dir, output_dir):
 
             run([
                 "python",
-                "1Dfit.py",
+                "2Dfit.py",
                 "-input",
                 path,
                 "-output",

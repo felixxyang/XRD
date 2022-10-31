@@ -37,9 +37,9 @@ for fileName, meas in dataFiles.items():
 temp, fwhm_002 = zip(*sorted(zip(temp, fwhm_002)))
 
 plt.plot(temp, fwhm_002,'o')
-plt.xlabel("Temperature (C)")
-plt.ylabel("FWHM")
-plt.title("Co\u2082FeSn 002")
+plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
+plt.ylabel("FWHM ($\AA$)")
+plt.title("Co\u2082FeSn (002)")
 plt.show()
 
 #plot 004 fwhm
@@ -54,43 +54,43 @@ for fileName, meas in dataFiles.items():
 temp, fwhm_004 = zip(*sorted(zip(temp, fwhm_004)))
 
 plt.plot(temp, fwhm_004,'o')
-plt.xlabel("Temperature (C)")
-plt.ylabel("FWHM")
-plt.title("Co\u2082FeSn 004")
+plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
+plt.ylabel("FWHM ($\AA$)")
+plt.title("Co\u2082FeSn (004)")
 plt.show()
 
 #plot 002 lattice constant
 temp = []
-d_002 = []
+a_002 = []
 
 for fileName, meas in dataFiles.items():
     if fileName.split("_")[1] == "CFS002":
         temp.append(allData[fileName]['temp'])
-        d_002.append(allData[fileName]['d'])
+        a_002.append(allData[fileName]['a'])
 
-temp, d_002 = zip(*sorted(zip(temp, d_002)))
+temp, a_002 = zip(*sorted(zip(temp, a_002)))
 
-plt.plot(temp, d_002,'o')
-plt.xlabel("Temperature (C)")
-plt.ylabel("d_002 ($\AA$)")
-plt.title("Co\u2082FeSn 002")
+plt.plot(temp, a_002,'o')
+plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
+plt.ylabel("a ($\AA$)")
+plt.title("Co\u2082FeSn (002)")
 plt.show()
 
 #plot 004 lattice constant
 temp = []
-d_004 = []
+a_004 = []
 
 for fileName, meas in dataFiles.items():
     if fileName.split("_")[1] == "CFS004":
         temp.append(allData[fileName]['temp'])
-        d_004.append(allData[fileName]['d'])
+        a_004.append(allData[fileName]['a'])
 
-temp, d_004 = zip(*sorted(zip(temp, d_004)))
+temp, a_004 = zip(*sorted(zip(temp, a_004)))
 
-plt.plot(temp, d_004,'o')
-plt.xlabel("Temperature (C)")
-plt.ylabel("d_004 ($\AA$)")
-plt.title("Co\u2082FeSn 004")
+plt.plot(temp, a_004,'o')
+plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
+plt.ylabel("a ($\AA$)")
+plt.title("Co\u2082FeSn (004)")
 plt.show()
 
 #plot area ratio 004/002
@@ -108,9 +108,9 @@ for fileName, meas in dataFiles.items():
 temp, ratio = zip(*sorted(zip(temp, ratio)))
 
 plt.plot(temp, ratio,'o')
-plt.xlabel("Temperature (C)")
+plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
 plt.ylabel("Integrated Area Ratio")
-plt.title("Co\u2082FeSn A_004 / A_002")
+plt.title("Co\u2082FeSn A_(004) / A_(002)")
 plt.show()
 
 

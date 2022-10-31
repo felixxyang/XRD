@@ -48,6 +48,7 @@ def integration(df, pars):
     result = integrate.quad(lambda x:_1Voigt(x, *pars), df['angle'].iat[0], df['angle'].iat[-1])
     return result[0]
 
+#spicify local xlsx file (sample growth temperatures) location here 
 def findTemp(sample):
     df_temp = pd.read_excel("C:\\Users\\felix\\OneDrive\\Desktop\\Temperatures.xlsx")
     for i in range(df_temp.shape[0]):
@@ -118,8 +119,12 @@ def handle_input(input_file, output_file):
     theta = pars[3] / 2
     print("Peak postition is located at", 2 * theta)
     #Rigaku uses Cu as X-ray source
-    d = 1.540593 / (2 * np.sin(theta))
-    print("d-space is", d)
+    if planeName == "CFS004":
+        a = 1.540593 / (2 * np.sin(theta)) / 4
+        print("Out of plane lattice Constant is", a)
+    elif planeName == "CFS002":
+        a = 1.540593 / (2 * np.sin(theta)) / 2
+        print("Out of plane lattice Constant is", a)
     
     #finding sample's growth temperature
     temp = int(findTemp(sampleName))
@@ -128,7 +133,7 @@ def handle_input(input_file, output_file):
     data_dict = {}
     data_dict[sampleName+"_"+planeName] = {
         "temp" : temp,
-        "d" : d,
+        "a" : a,
         "area" : area,
         "fwhm" : fwhm,
         "R2" : R2,

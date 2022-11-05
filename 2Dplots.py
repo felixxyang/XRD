@@ -39,6 +39,7 @@ temp, fwhm_002 = zip(*sorted(zip(temp, fwhm_002)))
 plt.plot(temp, fwhm_002,'o')
 plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
 plt.ylabel("FWHM ($\AA$)")
+#plt.xticks(range(min(temp), max(temp), 50))
 plt.title("Co\u2082FeSn (002)")
 plt.show()
 
@@ -112,7 +113,6 @@ plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
 plt.ylabel("Integrated Area Ratio")
 plt.title("Co\u2082FeSn A_(004) / A_(002)")
 plt.show()
-
 
 
 

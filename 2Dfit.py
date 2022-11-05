@@ -88,7 +88,7 @@ def handle_input(input_file, output_file):
     ax1.plot(df['angle'],df['intensity'],label="measurement")
     ax1.set_xlabel('2$\Theta$')
     ax1.set_ylabel('intensity')
-    ax1.set_title('data & fitting')
+    ax1.set_title(sampleName + '_' + planeName)
     #fit
     max_position = df['angle'][df['intensity'][df['intensity'] == np.max(df['intensity'])].index[0]]
     wid = FWHM(df['angle'], df['intensity'])
@@ -98,7 +98,7 @@ def handle_input(input_file, output_file):
     pars, cov = optimize.curve_fit(f=_1Voigt, xdata=df['angle'], ydata=df['intensity'],p0=guess_prms)
     ax1.plot(df['angle'], _1Voigt(df['angle'], *pars), label="fitted curve")
     ax1.legend()
-    #plt.show()
+    plt.show()
     
     #residula
     fig2, ax2 = plt.subplots()

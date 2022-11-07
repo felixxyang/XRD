@@ -98,7 +98,7 @@ def handle_input(input_file, output_file):
     pars, cov = optimize.curve_fit(f=_1Voigt, xdata=df['angle'], ydata=df['intensity'],p0=guess_prms)
     ax1.plot(df['angle'], _1Voigt(df['angle'], *pars), label="fitted curve")
     ax1.legend()
-    plt.show()
+    #plt.show()
     
     #residula
     fig2, ax2 = plt.subplots()
@@ -120,10 +120,10 @@ def handle_input(input_file, output_file):
     print("Peak postition is located at", 2 * theta)
     #Rigaku uses Cu as X-ray source
     if planeName == "CFS004":
-        a = 1.540593 / (2 * np.sin(theta)) / 4
+        a = (1.540593 / (2 * np.sin(theta * np.pi / 180))) * 4
         print("Out of plane lattice Constant is", a)
     elif planeName == "CFS002":
-        a = 1.540593 / (2 * np.sin(theta)) / 2
+        a = (1.540593 / (2 * np.sin(theta * np.pi / 180))) * 2
         print("Out of plane lattice Constant is", a)
     
     #finding sample's growth temperature

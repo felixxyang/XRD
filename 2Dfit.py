@@ -48,14 +48,14 @@ def AdjRsquared(Y,Yfit,pars):
     AR2 = 1 - ((ss_res/ (n - K)  ) / (ss_tot/ (n - 1)  ))
     return AR2
 
-def integration(df, pars, fwhm):
+def integration(df, pars, fwhm, multi):
 
     angle_arr = np.asarray(df['angle'])
     int_arr = np.asarray(df['intensity'])
     peak = find_nearest( angle_arr , pars[3])
     peak_ind = np.where(angle_arr == peak)[0][0]
-    left_cutoff = find_nearest( angle_arr[:peak_ind] , peak - 3*fwhm)
-    right_cutoff = find_nearest( angle_arr[peak_ind:] , peak + 3*fwhm)
+    left_cutoff = find_nearest( angle_arr[:peak_ind] , peak - float(multi)*fwhm)
+    right_cutoff = find_nearest( angle_arr[peak_ind:] , peak + float(multi)*fwhm)
     lc_index = np.where(angle_arr[:peak_ind] == left_cutoff)[0][0]
     rc_index = np.where(angle_arr[peak_ind:] == right_cutoff)[0][0] + peak_ind
     
@@ -98,8 +98,16 @@ def findTemp(sample):
         "Output file for data of this measurement"
     )
 )
+@click.option(
+    "--multiplicity",
+    "-multi",
+    prompt=True,
+    help=(
+        "multiplicity of fwhm for cutoff"
+    )
+)
 
-def handle_input(input_file, output_file):
+def handle_input(input_file, output_file, multiplicity):
     
     if sys.platform == "win32":
         sampleName = input_file.split("\\")[-1].split("_")[1]
@@ -137,7 +145,7 @@ def handle_input(input_file, output_file):
     fwhm = FWHM(df['angle'], _1Voigt(df['angle'], *pars))
     print("The FWHM is", fwhm)
     
-    area, p, lci, rci, new_angle, new_int = integration(df, pars, fwhm)
+    area, p, lci, rci, new_angle, new_int = integration(df, pars, fwhm, multiplicity)
     print("The arae under the peak is", area)
     ax1.axvline(df['angle'][lci], color='r')
     ax1.axvline(df['angle'][rci], color='r')

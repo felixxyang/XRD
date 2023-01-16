@@ -48,14 +48,14 @@ def AdjRsquared(Y,Yfit,pars):
     AR2 = 1 - ((ss_res/ (n - K)  ) / (ss_tot/ (n - 1)  ))
     return AR2
 
-def integration(df, pars, fwhm, multi):
+def integration(df, pars, fwhm, left_multi, right_multi):
 
     angle_arr = np.asarray(df['angle'])
     int_arr = np.asarray(df['intensity'])
     peak = find_nearest( angle_arr , pars[3])
     peak_ind = np.where(angle_arr == peak)[0][0]
-    left_cutoff = find_nearest( angle_arr[:peak_ind] , peak - float(multi)*fwhm)
-    right_cutoff = find_nearest( angle_arr[peak_ind:] , peak + float(multi)*fwhm)
+    left_cutoff = find_nearest( angle_arr[:peak_ind] , peak - float(left_multi)*fwhm)
+    right_cutoff = find_nearest( angle_arr[peak_ind:] , peak + float(right_multi)*fwhm)
     lc_index = np.where(angle_arr[:peak_ind] == left_cutoff)[0][0]
     rc_index = np.where(angle_arr[peak_ind:] == right_cutoff)[0][0] + peak_ind
     
@@ -64,12 +64,20 @@ def integration(df, pars, fwhm, multi):
     ave_k = (pars_l[0] + pars_r[0]) / 2
     ave_b = (pars_l[1] + pars_r[1]) / 2
     
+    background = []
+    
     for i in range(len(angle_arr)):
+        background.append( linearFit(angle_arr[i], ave_k, ave_b))
         int_arr[i] -= linearFit(angle_arr[i], ave_k, ave_b)  
         
     area = np.trapz(int_arr, angle_arr)
     
-    return area, peak_ind, lc_index, rc_index, angle_arr, int_arr
+    #adding a line to see integration progress
+    prog_arr = []
+    for i in range(len(angle_arr)):
+        prog_arr.append(np.trapz(int_arr[:i],angle_arr[:i]))
+    
+    return area, peak_ind, lc_index, rc_index, angle_arr, int_arr, prog_arr, background
     #result = integrate.quad(lambda x:_1Voigt(x, *pars), df['angle'].iat[0], df['angle'].iat[-1])
     #return result[0]
 
@@ -99,15 +107,23 @@ def findTemp(sample):
     )
 )
 @click.option(
-    "--multiplicity",
-    "-multi",
+    "--left-multiplicity",
+    "-lm",
     prompt=True,
     help=(
-        "multiplicity of fwhm for cutoff"
+        "multiplicity of fwhm for cutoff on the left side"
+    )
+)
+@click.option(
+    "--right-multiplicity",
+    "-rm",
+    prompt=True,
+    help=(
+        "multiplicity of fwhm for cutoff on the right side"
     )
 )
 
-def handle_input(input_file, output_file, multiplicity):
+def handle_input(input_file, output_file, left_multiplicity, right_multiplicity):
     
     if sys.platform == "win32":
         sampleName = input_file.split("\\")[-1].split("_")[1]
@@ -145,13 +161,15 @@ def handle_input(input_file, output_file, multiplicity):
     fwhm = FWHM(df['angle'], _1Voigt(df['angle'], *pars))
     print("The FWHM is", fwhm)
     
-    area, p, lci, rci, new_angle, new_int = integration(df, pars, fwhm, multiplicity)
+    area, p, lci, rci, new_angle, new_int, prog, bg = integration(df, pars, fwhm, left_multiplicity, right_multiplicity)
     print("The arae under the peak is", area)
     ax1.axvline(df['angle'][lci], color='r')
     ax1.axvline(df['angle'][rci], color='r')
     ax1.axhline(0, color='r')
     #ax1.axvline(df['angle'][p], color='orange')
     ax1.plot(new_angle, new_int, label='background cut-out')
+    ax1.plot(new_angle, prog, label='integration')
+    ax1.plot(new_angle, bg, label='background')
     ax1.legend()
     plt.show()
     

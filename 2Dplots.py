@@ -102,8 +102,8 @@ for fileName, meas in dataFiles.items():
     if fileName.split("_")[1] == "CFS004":
         sampleName = fileName.split("_")[0]
         temp.append(allData[fileName]['temp'])
-        ratio.append(allData[sampleName+"_CFS004"]['area'] 
-                     / allData[sampleName+"_CFS002"]['area']) 
+        ratio.append(allData[sampleName+"_CFS002"]['area'] 
+                     / allData[sampleName+"_CFS004"]['area']) 
 
 
 temp, ratio = zip(*sorted(zip(temp, ratio)))
@@ -111,7 +111,7 @@ temp, ratio = zip(*sorted(zip(temp, ratio)))
 plt.plot(temp, ratio,'o')
 plt.xlabel("Temperature (\N{DEGREE SIGN}C)")
 plt.ylabel("Integrated Area Ratio")
-plt.title("Co\u2082FeSn A_(004) / A_(002)")
+plt.title("Co\u2082FeSn A_(002) / A_(004)")
 plt.show()
 
 

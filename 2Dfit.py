@@ -60,12 +60,7 @@ def integration(df, pars, fwhm, left_multi, right_multi):
     rc_index = np.where(angle_arr[peak_ind:] == right_cutoff)[0][0] + peak_ind
     
     
-    pars_l, cov_l = optimize.curve_fit(f=linearFit, xdata=angle_arr[:lc_index], ydata=int_arr[:lc_index])
-    pars_r, cov_r = optimize.curve_fit(f=linearFit, xdata=angle_arr[rc_index:], ydata=int_arr[rc_index:])
-    ave_k = (pars_l[0] + pars_r[0]) / 2
-    ave_b = (pars_l[1] + pars_r[1]) / 2
-    
-    #new try: piecing two cutoff as one and fit it as a whole
+    #piecing two cutoff as one and fit it as a whole
     angle_no_middle = np.append(angle_arr[:lc_index], angle_arr[rc_index:]) 
     int_no_middle = np.append(int_arr[:lc_index], int_arr[rc_index:]) 
     pars_n, cov_n = optimize.curve_fit(f=linearFit, xdata=angle_no_middle, ydata=int_no_middle)

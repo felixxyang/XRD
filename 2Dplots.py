@@ -94,7 +94,7 @@ plt.ylabel("a ($\AA$)")
 plt.title("Co\u2082FeSn (004)")
 plt.show()
 
-#plot area ratio 004/002
+#plot area ratio 002/004
 temp = []
 ratio = []
 

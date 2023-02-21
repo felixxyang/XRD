@@ -24,7 +24,9 @@ for fileName, path in dataFiles.items():
     with open(path) as json_file:
         data_dict = json.load(json_file)
         allData[fileName] = data_dict[fileName]
-        
+ 
+plt.rcParams['figure.figsize'] = (7.5, 7.5)
+
 #plot 002 fwhm
 temp = []
 fwhm_002 = []
@@ -36,11 +38,12 @@ for fileName, meas in dataFiles.items():
 
 temp, fwhm_002 = zip(*sorted(zip(temp, fwhm_002)))
 
-plt.plot(temp, fwhm_002,'o')
-plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)")
-plt.ylabel("FWHM ($\AA$)")
-#plt.xticks(range(min(temp), max(temp), 50))
-plt.title("Co\u2082FeSn (002)")
+plt.plot(temp, fwhm_002,'v', color = '#68228B', markersize=15)
+plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)", fontsize=14, weight = 'bold')
+plt.ylabel("FWHM (\N{DEGREE SIGN})", fontsize=14, weight = 'bold')
+plt.xticks(fontsize=14, weight = 'bold')
+plt.yticks(fontsize=14, weight = 'bold')
+#plt.title("Co\u2082FeSn (002)")
 plt.show()
 
 #plot 004 fwhm
@@ -54,10 +57,12 @@ for fileName, meas in dataFiles.items():
 
 temp, fwhm_004 = zip(*sorted(zip(temp, fwhm_004)))
 
-plt.plot(temp, fwhm_004,'o')
-plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)")
-plt.ylabel("FWHM ($\AA$)")
-plt.title("Co\u2082FeSn (004)")
+plt.plot(temp, fwhm_004,'v', color = '#68228B', markersize=15)
+plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)", fontsize=14, weight = 'bold')
+plt.ylabel("FWHM (\N{DEGREE SIGN})", fontsize=14, weight = 'bold')
+plt.xticks(fontsize=14, weight = 'bold')
+plt.yticks(fontsize=14, weight = 'bold')
+#plt.title("Co\u2082FeSn (004)")
 plt.show()
 
 #plot 002 lattice constant
@@ -71,10 +76,12 @@ for fileName, meas in dataFiles.items():
 
 temp, a_002 = zip(*sorted(zip(temp, a_002)))
 
-plt.plot(temp, a_002,'o')
-plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)")
-plt.ylabel("a ($\AA$)")
-plt.title("Co\u2082FeSn (002)")
+plt.plot(temp, a_002,'^', color = '#68228B', markersize=15)
+plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)", fontsize=14, weight = 'bold')
+plt.ylabel("a ($\AA$)", fontsize=14, weight = 'bold')
+plt.xticks(fontsize=14, weight = 'bold')
+plt.yticks(fontsize=14, weight = 'bold')
+#plt.title("Co\u2082FeSn (002)")
 plt.show()
 
 #plot 004 lattice constant
@@ -88,10 +95,12 @@ for fileName, meas in dataFiles.items():
 
 temp, a_004 = zip(*sorted(zip(temp, a_004)))
 
-plt.plot(temp, a_004,'o')
-plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)")
-plt.ylabel("a ($\AA$)")
-plt.title("Co\u2082FeSn (004)")
+plt.plot(temp, a_004,'^', color = '#68228B', markersize=15)
+plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)", fontsize=14, weight = 'bold')
+plt.ylabel("a ($\AA$)", fontsize=14, weight = 'bold')
+plt.xticks(fontsize=14, weight = 'bold')
+plt.yticks(fontsize=14, weight = 'bold')
+#plt.title("Co\u2082FeSn (004)")
 plt.show()
 
 #plot area ratio 002/004
@@ -108,10 +117,12 @@ for fileName, meas in dataFiles.items():
 
 temp, ratio = zip(*sorted(zip(temp, ratio)))
 
-plt.plot(temp, ratio,'o')
-plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)")
-plt.ylabel("Integrated Area Ratio")
-plt.title("Co\u2082FeSn A_(002) / A_(004)")
+plt.plot(temp, ratio,'^', color = '#68228B', markersize=15)
+plt.xlabel("Growth Temperature (\N{DEGREE SIGN}C)", fontsize=14, weight = 'bold')
+plt.ylabel("$I_{002}$ / $I_{004}$", fontsize=16, weight = 'bold')
+plt.xticks(fontsize=14, weight = 'bold')
+plt.yticks(fontsize=14, weight = 'bold')
+#plt.title("Co\u2082FeSn A_(002) / A_(004)")
 plt.show()
 
 

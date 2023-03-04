@@ -5,6 +5,7 @@ data fitting on RSM from Rigaku XRD
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.signal import convolve
+from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 import click
 
@@ -117,23 +118,77 @@ def handle_input(input_file):
     ax.set_zlim(0,np.max(Z)+2)
     plt.show()
     
-    #smoothing the raw data and plot
-    blur_Z = blur_image(Z, 3)
-    """
-    print(Z)
-    print(type(Z))
-    print(len(Z))
-    print(len(Z[0]))
-    print(blur_Z)
-    print(type(blur_Z))
-    print(len(blur_Z))
-    print(len(blur_Z[0]))
-    """
+    #smooth data using gaussian_filter
+    result = gaussian_filter(Z, 5)
+    
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.plot_surface(X, Y, blur_Z, cmap='plasma')
-    ax.set_zlim(0,np.max(blur_Z)+2)
+    ax.plot_surface(X, Y, result, cmap='plasma')
+    ax.set_zlim(0,np.max(result)+2)
     plt.show()
+    #print(np.max(result))
+    
+    #finding the indices of maximum value
+    ind = np.unravel_index(np.argmax(result, axis=None), result.shape)
+    y_ind = ind[0]
+    x_ind = ind[1]
+
+
+    
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(Z, origin='lower', cmap='plasma',
+              extent=(x.min(), x.max(), y.min(), y.max())) 
+    ax.scatter(x[x_ind],y[y_ind])
+    plt.show()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(result, origin='lower', cmap='plasma',
+              extent=(x.min(), x.max(), y.min(), y.max())) 
+    ax.scatter(x[x_ind],y[y_ind])
+    plt.show()
+    """
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    """    
+    #smoothing the raw data and plot
+    blur_Z = blur_image(Z, 3)
+    
+    
+    #smooth for the 2nd time
+    blur_Z = blur_image(blur_Z, 3)
+
+    
+    
+    #smooth for the 3rd time
+    blur_Z = blur_image(blur_Z, 3)
+    
+    my_ind = np.unravel_index(np.argmax(blur_Z, axis=None), blur_Z.shape)
+    my_y_ind = my_ind[0]
+    my_x_ind = my_ind[1]
+       
+    """
+    
     
     # Initial guesses to the fit parameters. 
     xFWHM = abs(x[np.where(Z == np.max(Z))[1][0]] - 
@@ -166,6 +221,7 @@ def handle_input(input_file):
     rms = np.sqrt(np.mean((Z - fit)**2))
     print('RMS residual =', rms)
 
+    """
     # Plot the 3D figure of the fitted function.
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
@@ -192,7 +248,58 @@ def handle_input(input_file):
     Q_o = (np.sin(popt[1]) + np.sin(popt[0] - popt[1] )) / (1.540593)
     Q_i = (np.cos(popt[1]) - np.cos(popt[0] - popt[1] )) / (1.540593)
     print('Out of plane Q is', Q_o , 'In plane Q is', Q_i)
+    """
+    
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(Z, origin='lower', cmap='plasma',
+              extent=(x.min(), x.max(), y.min(), y.max())) 
+    ax.scatter(x[x_ind],y[y_ind], marker = '^', color = 'blue', label = 'smooth')
+    ax.scatter(popt[0], popt[1], marker = '^', color = 'green', label = 'fit')
+    ax.legend()
+    #ax.scatter(x[my_x_ind],y[my_y_ind], marker = '^', color = 'red')
+    plt.show()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(result, origin='lower', cmap='plasma',
+              extent=(x.min(), x.max(), y.min(), y.max())) 
+    ax.scatter(x[x_ind],y[y_ind], marker = '^', color = 'blue', label = 'smooth')
+    ax.scatter(popt[0], popt[1], marker = '^', color = 'green', label = 'fit')
+    #ax.scatter(x[my_x_ind],y[my_y_ind], marker = '^', color = 'red')
+    ax.legend()
+    plt.show()
+    
+    #calculate lattice constants using peak positions from fit and smooth
+    t2_fit = popt[0]
+    w_fit = popt[1]
+    
+    Qo_fit = (np.sin(w_fit / 180 * np.pi) + np.sin((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
+    Qi_fit = (np.cos(w_fit / 180 * np.pi) - np.cos((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
+    h,k,l = 2,0,4
+    a_fit = np.sqrt((h**2) + (k**2)) / Qi_fit
+    c_fit = l / Qo_fit
+    
+    print("In plane lattice constant calculated via fitting is", a_fit)
+    print("Out of plane lattice constant calculated via fitting is", c_fit)
+    
+    t2_smooth = x[x_ind]
+    w_smooth = y[y_ind]
 
+    Qo_smooth = (np.sin(w_smooth / 180 * np.pi) + np.sin((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
+    Qi_smooth = (np.cos(w_smooth / 180 * np.pi) - np.cos((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
+    a_smooth = np.sqrt((h**2) + (k**2)) / Qi_smooth
+    c_smooth = l / Qo_smooth
+    
+    print("In plane lattice constant calculated via smoothing is", a_smooth)
+    print("Out of plane lattice constant calculated via smoothing is", c_smooth)
+    
+
+    
+    
+
+    """
     ###Fitting data after smoothing
     # Initial guesses to the fit parameters. 
     xFWHM = abs(x[np.where(blur_Z == np.max(blur_Z))[1][0]] - 
@@ -253,7 +360,8 @@ def handle_input(input_file):
     print('Out of plane Q is', Q_o , 'In plane Q is', Q_i)
    
     ###END fiting data after smoothing 
-    
+    """
+   
 if __name__ == "__main__":
     handle_input()
 

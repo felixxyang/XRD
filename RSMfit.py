@@ -2,11 +2,14 @@
 data fitting on RSM from Rigaku XRD
 """
 
+import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.signal import convolve
 from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
+import sys
+import json
 import click
 
 def gaussian(x, y, x0, y0, xalpha, yalpha, A):
@@ -29,25 +32,14 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def gauss_kern(size, sizey=None):
-    """ Returns a normalized 2D gauss kernel array for convolutions """
-    size = int(size)
-    if not sizey:
-        sizey = size
-    else:
-        sizey = int(sizey)
-    x, y = np.mgrid[-size:size+1, -sizey:sizey+1]
-    g = np.exp(-(x**2/float(size)+y**2/float(sizey)))
-    return g / g.sum()
+#spicify local xlsx file (sample growth temperatures) location here 
+def findTemp(sample):
+    df_temp = pd.read_excel("C:\\Users\\felix\\OneDrive\\Desktop\\Temperatures.xlsx")
+    for i in range(df_temp.shape[0]):
+        if df_temp['sample'][i] == sample:
+            temp = df_temp['temp'][i]
+    return temp
 
-def blur_image(im, n, ny=None) :
-    """ blurs the image by convolving with a gaussian kernel of typical
-        size n. The optional keyword argument ny allows for a different
-        size in the y direction.
-    """
-    g = gauss_kern(n, sizey=ny)
-    improc = convolve(im,g, mode='same')
-    return(improc)
 
 @click.command()
 @click.option(
@@ -58,7 +50,22 @@ def blur_image(im, n, ny=None) :
         "RMS txt file from Rigaku"
     )
 )
-def handle_input(input_file):
+@click.option(
+    "--output-file",
+    "-output",
+    prompt=True,
+    help=(
+        "Output file for calculated data of this measurement"
+    )
+)
+
+def handle_input(input_file, output_file):
+    
+    if sys.platform == "win32":
+        sampleName = input_file.split("\\")[-1].split("_")[1]
+    else:
+        sampleName = input_file.split("/")[-1].split("_")[1]
+    
     #create empty list for Omega, 2theta and Intensity
     w = []
     t2 = []
@@ -114,24 +121,76 @@ def handle_input(input_file):
     # Plot the 3D figure of the raw data.
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
+    ax.set_title(sampleName)
     ax.plot_surface(X, Y, Z, cmap='plasma')
     ax.set_zlim(0,np.max(Z)+2)
     plt.show()
     
-    #smooth data using gaussian_filter
+    #smooth data using gaussian_filter and plot the smoothed data
     result = gaussian_filter(Z, 5)
     
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
+    ax.set_title(sampleName)
     ax.plot_surface(X, Y, result, cmap='plasma')
     ax.set_zlim(0,np.max(result)+2)
     plt.show()
-    #print(np.max(result))
     
     #finding the indices of maximum value
     ind = np.unravel_index(np.argmax(result, axis=None), result.shape)
     y_ind = ind[0]
     x_ind = ind[1]
+    
+    
+    #plotting peak position from top-down veiw
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title(sampleName)
+    ax.imshow(Z, origin='lower', cmap='plasma',
+              extent=(x.min(), x.max(), y.min(), y.max())) 
+    ax.scatter(x[x_ind],y[y_ind], marker = '^', color = 'green', label = 'smooth')
+    ax.legend()
+    plt.show()
+    
+    
+    #calculate lattice constants using peak positions from smooth peak
+    h,k,l = 2,2,4
+    
+    t2_smooth = x[x_ind]
+    w_smooth = y[y_ind]
+
+    Qo_smooth = (np.sin(w_smooth / 180 * np.pi) + np.sin((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
+    Qi_smooth = (np.cos(w_smooth / 180 * np.pi) - np.cos((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
+    a_smooth = np.sqrt((h**2) + (k**2)) / Qi_smooth
+    c_smooth = l / Qo_smooth
+    ca_ratio = c_smooth / a_smooth
+    
+    print("In plane lattice constant calculated via smoothing is", a_smooth)
+    print("Out of plane lattice constant calculated via smoothing is", c_smooth)
+    
+    #finding sample's growth temperature
+    temp = int(findTemp(sampleName))
+    
+    #create dictionary
+    data_dict = {}
+    data_dict[sampleName] = {
+        "temp" : temp,
+        "a" : a_smooth,
+        "c" : c_smooth,
+        "ratio" : ca_ratio,
+        }
+    
+    with open(output_file, "w") as ofs:
+        json.dump(data_dict, ofs, indent=2)
+    
+    
+
+   
+if __name__ == "__main__":
+    handle_input()
+
+
+
 
 
     
@@ -151,45 +210,22 @@ def handle_input(input_file):
     plt.show()
     """
 
-
+    """
+    t2_fit = popt[0]
+    w_fit = popt[1]
     
+    Qo_fit = (np.sin(w_fit / 180 * np.pi) + np.sin((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
+    Qi_fit = (np.cos(w_fit / 180 * np.pi) - np.cos((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
+    a_fit = np.sqrt((h**2) + (k**2)) / Qi_fit
+    c_fit = l / Qo_fit
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    """    
-    #smoothing the raw data and plot
-    blur_Z = blur_image(Z, 3)
-    
-    
-    #smooth for the 2nd time
-    blur_Z = blur_image(blur_Z, 3)
-
-    
-    
-    #smooth for the 3rd time
-    blur_Z = blur_image(blur_Z, 3)
-    
-    my_ind = np.unravel_index(np.argmax(blur_Z, axis=None), blur_Z.shape)
-    my_y_ind = my_ind[0]
-    my_x_ind = my_ind[1]
-       
+    print("Q parallel =", Qi_fit )
+    print("In plane lattice constant calculated via fitting is", a_fit)
+    print("Out of plane lattice constant calculated via fitting is", c_fit)
     """
     
     
+    """
     # Initial guesses to the fit parameters. 
     xFWHM = abs(x[np.where(Z == np.max(Z))[1][0]] - 
                 x[find_nearest(Z[np.where(Z == np.max(Z))[0][0]], np.max(Z)/2)])
@@ -220,6 +256,7 @@ def handle_input(input_file):
     #RMS residual
     rms = np.sqrt(np.mean((Z - fit)**2))
     print('RMS residual =', rms)
+    """
 
     """
     # Plot the 3D figure of the fitted function.
@@ -245,60 +282,10 @@ def handle_input(input_file):
     plt.show()
 
     print('Peak location is at 2theta = ', popt[0] , 'and w = ' , popt[1] )
-    Q_o = (np.sin(popt[1]) + np.sin(popt[0] - popt[1] )) / (1.540593)
-    Q_i = (np.cos(popt[1]) - np.cos(popt[0] - popt[1] )) / (1.540593)
-    print('Out of plane Q is', Q_o , 'In plane Q is', Q_i)
     """
     
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.imshow(Z, origin='lower', cmap='plasma',
-              extent=(x.min(), x.max(), y.min(), y.max())) 
-    ax.scatter(x[x_ind],y[y_ind], marker = '^', color = 'blue', label = 'smooth')
-    ax.scatter(popt[0], popt[1], marker = '^', color = 'green', label = 'fit')
-    ax.legend()
-    #ax.scatter(x[my_x_ind],y[my_y_ind], marker = '^', color = 'red')
-    plt.show()
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.imshow(result, origin='lower', cmap='plasma',
-              extent=(x.min(), x.max(), y.min(), y.max())) 
-    ax.scatter(x[x_ind],y[y_ind], marker = '^', color = 'blue', label = 'smooth')
-    ax.scatter(popt[0], popt[1], marker = '^', color = 'green', label = 'fit')
-    #ax.scatter(x[my_x_ind],y[my_y_ind], marker = '^', color = 'red')
-    ax.legend()
-    plt.show()
-    
-    #calculate lattice constants using peak positions from fit and smooth
-    t2_fit = popt[0]
-    w_fit = popt[1]
-    
-    Qo_fit = (np.sin(w_fit / 180 * np.pi) + np.sin((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
-    Qi_fit = (np.cos(w_fit / 180 * np.pi) - np.cos((t2_fit - w_fit) / 180 * np.pi )) / (1.540593)
-    h,k,l = 2,0,4
-    a_fit = np.sqrt((h**2) + (k**2)) / Qi_fit
-    c_fit = l / Qo_fit
-    
-    print("In plane lattice constant calculated via fitting is", a_fit)
-    print("Out of plane lattice constant calculated via fitting is", c_fit)
-    
-    t2_smooth = x[x_ind]
-    w_smooth = y[y_ind]
-
-    Qo_smooth = (np.sin(w_smooth / 180 * np.pi) + np.sin((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
-    Qi_smooth = (np.cos(w_smooth / 180 * np.pi) - np.cos((t2_smooth - w_smooth) / 180 * np.pi )) / (1.540593)
-    a_smooth = np.sqrt((h**2) + (k**2)) / Qi_smooth
-    c_smooth = l / Qo_smooth
-    
-    print("In plane lattice constant calculated via smoothing is", a_smooth)
-    print("Out of plane lattice constant calculated via smoothing is", c_smooth)
-    
-
-    
-    
-
     """
     ###Fitting data after smoothing
     # Initial guesses to the fit parameters. 
@@ -361,13 +348,3 @@ def handle_input(input_file):
    
     ###END fiting data after smoothing 
     """
-   
-if __name__ == "__main__":
-    handle_input()
-
-
-
-
-
-
-
